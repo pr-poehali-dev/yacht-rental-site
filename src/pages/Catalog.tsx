@@ -7,7 +7,16 @@ import YachtFilter from '@/components/YachtFilter';
 import { yachts } from '@/data/yachts';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +26,9 @@ const Catalog = () => {
     maxPrice: null as number | null,
     location: null as string | null,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [sortBy, setSortBy] = useState<string>('default');
 
   // Получаем уникальные локации и типы яхт для фильтров
   const locations = useMemo(() => {
@@ -42,6 +54,76 @@ const Catalog = () => {
       return matchesSearch && matchesType && matchesCapacity && matchesPrice && matchesLocation;
     });
   }, [searchTerm, filters]);
+
+  // Сортировка яхт
+  const sortedYachts = useMemo(() => {
+    let sorted = [...filteredYachts];
+    
+    switch (sortBy) {
+      case 'price-asc':
+        sorted.sort((a, b) => a.pricePerDay - b.pricePerDay);
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => b.pricePerDay - a.pricePerDay);
+        break;
+      case 'name-asc':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'capacity-desc':
+        sorted.sort((a, b) => b.capacity - a.capacity);
+        break;
+      case 'newest':
+        sorted.sort((a, b) => b.year - a.year);
+        break;
+      default:
+        // По умолчанию сортировка не применяется
+        break;
+    }
+    
+    return sorted;
+  }, [filteredYachts, sortBy]);
+
+  // Пагинация
+  const indexOfLastYacht = currentPage * itemsPerPage;
+  const indexOfFirstYacht = indexOfLastYacht - itemsPerPage;
+  const currentYachts = sortedYachts.slice(indexOfFirstYacht, indexOfLastYacht);
+  const totalPages = Math.ceil(sortedYachts.length / itemsPerPage);
+
+  // Изменение страницы
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  // Генерация номеров страниц для пагинации
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+      } else if (currentPage >= totalPages - 2) {
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+          pages.push(i);
+        }
+      }
+    }
+    
+    return pages;
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value, 10));
+    setCurrentPage(1); // Сбрасываем на первую страницу при изменении количества элементов
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -72,7 +154,7 @@ const Catalog = () => {
             {/* Main Content */}
             <div className="lg:w-3/4">
               {/* Search Bar */}
-              <div className="mb-6 flex">
+              <div className="mb-6 flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-grow">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
@@ -84,7 +166,7 @@ const Catalog = () => {
                   />
                 </div>
                 <Button 
-                  className="ml-2"
+                  className="sm:ml-2"
                   variant="outline"
                   onClick={() => setSearchTerm('')}
                 >
@@ -92,29 +174,97 @@ const Catalog = () => {
                 </Button>
               </div>
 
-              {/* Results Count */}
-              <div className="mb-4">
+              {/* Sort and Results Count */}
+              <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <p className="text-gray-600">
                   Найдено яхт: <span className="font-semibold">{filteredYachts.length}</span>
                 </p>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Сортировать:</span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="По умолчанию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">По умолчанию</SelectItem>
+                      <SelectItem value="price-asc">Сначала дешевле</SelectItem>
+                      <SelectItem value="price-desc">Сначала дороже</SelectItem>
+                      <SelectItem value="name-asc">По названию</SelectItem>
+                      <SelectItem value="capacity-desc">По вместимости</SelectItem>
+                      <SelectItem value="newest">Сначала новее</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Yacht Grid */}
               {filteredYachts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredYachts.map((yacht) => (
-                    <YachtCard
-                      key={yacht.id}
-                      id={yacht.id}
-                      name={yacht.name}
-                      type={yacht.type}
-                      length={yacht.length}
-                      capacity={yacht.capacity}
-                      pricePerDay={yacht.pricePerDay}
-                      image={yacht.images[0]}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {currentYachts.map((yacht) => (
+                      <YachtCard
+                        key={yacht.id}
+                        id={yacht.id}
+                        name={yacht.name}
+                        type={yacht.type}
+                        length={yacht.length}
+                        capacity={yacht.capacity}
+                        pricePerDay={yacht.pricePerDay}
+                        image={yacht.images[0]}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="mt-8 flex flex-col sm:flex-row justify-between items-center">
+                      <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+                        <span className="text-sm text-gray-600">Яхт на странице:</span>
+                        <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                          <SelectTrigger className="w-[70px]">
+                            <SelectValue placeholder="9" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="6">6</SelectItem>
+                            <SelectItem value="9">9</SelectItem>
+                            <SelectItem value="12">12</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              onClick={() => currentPage > 1 && paginate(currentPage - 1)}
+                              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                          
+                          {getPageNumbers().map(number => (
+                            <PaginationItem key={number}>
+                              <PaginationLink 
+                                isActive={currentPage === number}
+                                onClick={() => paginate(number)}
+                              >
+                                {number}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+                          
+                          <PaginationItem>
+                            <PaginationNext 
+                              onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
+                              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Яхты не найдены</h3>

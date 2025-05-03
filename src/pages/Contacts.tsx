@@ -4,9 +4,21 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Clock, 
+  CheckCircle, 
+  Instagram, 
+  Facebook, 
+  Twitter, 
+  Youtube 
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Contacts = () => {
   const { toast } = useToast();
@@ -16,32 +28,44 @@ const Contacts = () => {
     phone: '',
     message: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Имитация отправки формы
-    setTimeout(() => {
+    setLoading(true);
+
+    try {
+      // Имитация отправки данных на сервер
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Успешное сообщение
       toast({
         title: "Сообщение отправлено",
         description: "Мы свяжемся с вами в ближайшее время",
-        duration: 5000
+        variant: "default",
       });
+      
+      // Сброс формы
       setFormData({
         name: '',
         email: '',
         phone: '',
         message: ''
       });
-      setIsSubmitting(false);
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Ошибка отправки",
+        description: "Пожалуйста, попробуйте еще раз",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,161 +73,209 @@ const Contacts = () => {
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-blue-900 text-white py-16">
-          <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-4">Контакты</h1>
-            <p className="text-blue-100 max-w-2xl">
-              Свяжитесь с нами, чтобы забронировать яхту или получить дополнительную информацию о наших услугах
+        <div className="bg-blue-900 text-white py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Свяжитесь с нами</h1>
+            <p className="text-blue-100 max-w-2xl mx-auto">
+              Наша команда всегда готова ответить на ваши вопросы и помочь с выбором идеальной яхты для вашего отдыха
             </p>
           </div>
-        </section>
+        </div>
 
         {/* Contact Info & Form */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row gap-12">
               {/* Contact Information */}
-              <div className="lg:w-1/3">
-                <h2 className="text-2xl font-bold text-blue-900 mb-6">Наши контакты</h2>
+              <div className="lg:w-2/5">
+                <h2 className="text-2xl font-bold mb-6 text-blue-900">Контактная информация</h2>
                 
                 <div className="space-y-6">
-                  <div className="flex">
-                    <div className="bg-blue-100 p-3 rounded-full mr-4">
-                      <Phone className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Телефон</h3>
-                      <p className="text-gray-600">+7 (123) 456-78-90</p>
-                      <p className="text-gray-600">+7 (987) 654-32-10</p>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <MapPin className="h-6 w-6 text-blue-700" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">Адрес</h3>
+                          <p className="text-gray-600">г. Севастополь, ул. Морская, 24</p>
+                          <p className="text-gray-600">Крым, Россия, 299011</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <div className="flex">
-                    <div className="bg-blue-100 p-3 rounded-full mr-4">
-                      <Mail className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
-                      <p className="text-gray-600">info@moreyacht.ru</p>
-                      <p className="text-gray-600">booking@moreyacht.ru</p>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <Phone className="h-6 w-6 text-blue-700" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">Телефон</h3>
+                          <p className="text-gray-600">+7 (978) 123-45-67</p>
+                          <p className="text-gray-600">+7 (978) 765-43-21</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <div className="flex">
-                    <div className="bg-blue-100 p-3 rounded-full mr-4">
-                      <MapPin className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Главный офис</h3>
-                      <p className="text-gray-600">г. Севастополь, ул. Морская, 123</p>
-                      <p className="text-gray-600">Севастопольская бухта, причал №3</p>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <Mail className="h-6 w-6 text-blue-700" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">Email</h3>
+                          <p className="text-gray-600">info@moreyacht.ru</p>
+                          <p className="text-gray-600">booking@moreyacht.ru</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <div className="flex">
-                    <div className="bg-blue-100 p-3 rounded-full mr-4">
-                      <Clock className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-1">Часы работы</h3>
-                      <p className="text-gray-600">Пн-Пт: 9:00 - 20:00</p>
-                      <p className="text-gray-600">Сб-Вс: 10:00 - 18:00</p>
-                    </div>
-                  </div>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <Clock className="h-6 w-6 text-blue-700" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">Время работы</h3>
+                          <p className="text-gray-600">Пн-Пт: 9:00 - 20:00</p>
+                          <p className="text-gray-600">Сб-Вс: 10:00 - 18:00</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
                 
-                <h3 className="text-xl font-semibold text-blue-900 mt-8 mb-4">Филиалы</h3>
-                <div className="space-y-4">
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-gray-800 mb-1">Ялта</h4>
-                    <p className="text-gray-600 mb-1">Ялтинский порт, причал №5</p>
-                    <p className="text-gray-600">+7 (978) 765-43-21</p>
-                  </div>
-                  
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-gray-800 mb-1">Сочи</h4>
-                    <p className="text-gray-600 mb-1">Сочинский морской порт, причал №2</p>
-                    <p className="text-gray-600">+7 (918) 987-65-43</p>
+                {/* Social Media */}
+                <div className="mt-8">
+                  <h3 className="font-semibold text-lg mb-4">Присоединяйтесь к нам</h3>
+                  <div className="flex gap-4">
+                    <a href="#" className="bg-blue-100 p-3 rounded-full text-blue-700 hover:bg-blue-200 transition-colors">
+                      <Instagram className="h-5 w-5" />
+                    </a>
+                    <a href="#" className="bg-blue-100 p-3 rounded-full text-blue-700 hover:bg-blue-200 transition-colors">
+                      <Facebook className="h-5 w-5" />
+                    </a>
+                    <a href="#" className="bg-blue-100 p-3 rounded-full text-blue-700 hover:bg-blue-200 transition-colors">
+                      <Twitter className="h-5 w-5" />
+                    </a>
+                    <a href="#" className="bg-blue-100 p-3 rounded-full text-blue-700 hover:bg-blue-200 transition-colors">
+                      <Youtube className="h-5 w-5" />
+                    </a>
                   </div>
                 </div>
               </div>
               
               {/* Contact Form */}
-              <div className="lg:w-2/3">
-                <div className="bg-white p-8 rounded-lg shadow-md">
-                  <h2 className="text-2xl font-bold text-blue-900 mb-6">Напишите нам</h2>
-                  
-                  <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                          Ваше имя *
-                        </label>
-                        <Input
-                          id="name"
-                          name="name"
-                          value={formData.name}
+              <div className="lg:w-3/5">
+                <h2 className="text-2xl font-bold mb-6 text-blue-900">Напишите нам</h2>
+                <Card>
+                  <CardContent className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Имя</Label>
+                          <Input 
+                            id="name" 
+                            name="name" 
+                            placeholder="Введите ваше имя" 
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            disabled={loading}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input 
+                            id="email" 
+                            name="email" 
+                            type="email" 
+                            placeholder="Введите ваш email" 
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            disabled={loading}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Телефон</Label>
+                        <Input 
+                          id="phone" 
+                          name="phone" 
+                          placeholder="Введите ваш телефон" 
+                          value={formData.phone}
                           onChange={handleChange}
-                          required
-                          placeholder="Иван Иванов"
+                          disabled={loading}
                         />
                       </div>
                       
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                          Email *
-                        </label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
+                      <div className="space-y-2">
+                        <Label htmlFor="message">Сообщение</Label>
+                        <Textarea 
+                          id="message" 
+                          name="message" 
+                          placeholder="Введите ваше сообщение" 
+                          rows={5}
+                          value={formData.message}
                           onChange={handleChange}
                           required
-                          placeholder="example@mail.ru"
+                          disabled={loading}
                         />
                       </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full md:w-auto" 
+                        disabled={loading}
+                      >
+                        {loading ? "Отправка..." : "Отправить сообщение"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+                
+                {/* Advantages */}
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold">Быстрый ответ</h4>
+                      <p className="text-sm text-gray-600">Мы отвечаем на запросы в течение 2 часов</p>
                     </div>
-                    
-                    <div className="mb-6">
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Телефон
-                      </label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+7 (___) ___-__-__"
-                      />
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold">Индивидуальный подход</h4>
+                      <p className="text-sm text-gray-600">Подберем оптимальный вариант под ваши требования</p>
                     </div>
-                    
-                    <div className="mb-6">
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                        Сообщение *
-                      </label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        value={formData.message}
-                        onChange={handleChange}
-                        required
-                        placeholder="Расскажите, что вас интересует..."
-                        rows={5}
-                      />
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold">Гибкие условия</h4>
+                      <p className="text-sm text-gray-600">Учитываем особые пожелания и предпочтения</p>
                     </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        "Отправка..."
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Отправить сообщение
-                        </>
-                      )}
-                    </Button>
-                  </form>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold">Поддержка 24/7</h4>
+                      <p className="text-sm text-gray-600">Оперативная помощь на всех этапах аренды</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,22 +283,20 @@ const Contacts = () => {
         </section>
 
         {/* Map Section */}
-        <section className="py-16 bg-white">
+        <section className="py-8">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold text-blue-900 text-center mb-8">Как нас найти</h2>
-            
-            <div className="bg-gray-200 rounded-lg overflow-hidden h-[400px] relative">
-              {/* Здесь будет карта. В демо-версии используем заглушку */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-blue-500 mx-auto mb-2" />
-                  <p className="text-gray-600">Здесь будет интерактивная карта с нашими локациями</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 text-center text-gray-600">
-              <p>Для навигатора: г. Севастополь, ул. Морская, 123</p>
+            <h2 className="text-2xl font-bold mb-6 text-blue-900">Мы на карте</h2>
+            <div className="h-96 bg-gray-200 rounded-lg overflow-hidden">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2839.1590300901735!2d33.5189697!3d44.6166595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDTCsDM3JzAwLjAiTiAzM8KwMzEnMDguNCJF!5e0!3m2!1sru!2sru!4v1623147988017!5m2!1sru!2sru" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy"
+                aria-hidden="false"
+                title="Карта расположения компании МореЯхт"
+              ></iframe>
             </div>
           </div>
         </section>

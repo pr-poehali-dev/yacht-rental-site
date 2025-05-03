@@ -1,7 +1,9 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Anchor, Award, Shield, Boat, Users, Globe } from 'lucide-react';
+import { Anchor, Boat, Compass, Award, Shield, Users } from 'lucide-react';
+import { Card, CardContent, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const About = () => {
   return (
@@ -9,90 +11,118 @@ const About = () => {
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-blue-900 text-white">
-          <div 
-            className="absolute inset-0 z-0 opacity-30 bg-cover bg-center" 
-            style={{ 
-              backgroundImage: "url('https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?auto=format&fit=crop&q=80&w=1200')",
-            }}
-          ></div>
-          
-          <div className="container mx-auto px-4 py-20 relative z-10">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">О компании МореЯхт</h1>
-            <p className="text-xl text-blue-100 max-w-2xl">
-              Мы предлагаем лучшие яхты и катера для незабываемого отдыха на море уже более 10 лет
+        <div className="bg-blue-900 text-white py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">О нашей компании</h1>
+            <p className="text-blue-100 max-w-2xl mx-auto">
+              МореЯхт — лидер в сфере аренды премиальных яхт с многолетним опытом работы на рынке
             </p>
           </div>
-        </section>
+        </div>
 
         {/* Our Story */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-12 items-center">
               <div className="md:w-1/2">
-                <h2 className="text-3xl font-bold text-blue-900 mb-6">Наша история</h2>
-                <p className="text-gray-700 mb-4 leading-relaxed">
-                  Компания МореЯхт была основана в 2014 году группой энтузиастов, объединенных страстью к морю и парусному спорту. Начав с небольшого флота из трех яхт, мы постепенно расширялись, добавляя новые суда и совершенствуя сервис.
+                <h2 className="text-3xl font-bold mb-6 text-blue-900">Наша история</h2>
+                <p className="text-gray-700 mb-4">
+                  Компания «МореЯхт» была основана в 2010 году группой энтузиастов и профессионалов в области морского дела. Мы начинали с небольшого флота из трех яхт, и за годы работы значительно расширили свои возможности.
                 </p>
-                <p className="text-gray-700 mb-4 leading-relaxed">
-                  За 10 лет работы мы стали одним из лидеров рынка аренды яхт на Черноморском побережье. Наша миссия — делать морской отдых доступным и комфортным для каждого, кто мечтает почувствовать свободу морских путешествий.
+                <p className="text-gray-700 mb-4">
+                  Сегодня мы предлагаем разнообразный выбор яхт — от компактных катеров для дневных прогулок до роскошных моторных яхт с командой для длительных морских путешествий.
                 </p>
-                <p className="text-gray-700 leading-relaxed">
-                  Сегодня наш флот насчитывает более 20 современных яхт различных типов и размеров, а команда состоит из опытных капитанов и специалистов, влюбленных в море и свою работу.
+                <p className="text-gray-700">
+                  Наша миссия — сделать морской отдых доступным и комфортным для каждого клиента, обеспечивая высочайший уровень сервиса и безопасности на воде.
                 </p>
               </div>
               <div className="md:w-1/2">
                 <img 
-                  src="https://images.unsplash.com/photo-1527431293370-0cd7c7e3bb9c?auto=format&fit=crop&q=80&w=700" 
-                  alt="История МореЯхт" 
-                  className="rounded-lg shadow-lg w-full"
+                  src="https://images.unsplash.com/photo-1606046604972-77cc76aee944?auto=format&fit=crop&q=80&w=1200" 
+                  alt="История компании МореЯхт" 
+                  className="rounded-lg shadow-lg w-full h-auto"
                 />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Our Values */}
+        {/* Why Choose Us */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Наши ценности</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Shield className="h-8 w-8 text-blue-600" />
+            <h2 className="text-3xl font-bold mb-12 text-center text-blue-900">Почему выбирают нас</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Boat className="h-6 w-6 text-blue-700" />
                   </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-blue-900">Безопасность</h3>
-                <p className="text-gray-700">
-                  Безопасность наших клиентов — наш главный приоритет. Все суда регулярно проходят техническую проверку и обслуживание.
-                </p>
-              </div>
+                  <h3 className="text-xl font-semibold mb-2">Современный флот</h3>
+                  <CardDescription>
+                    Наш флот состоит из современных яхт различных типов и размеров, оснащенных всем необходимым для комфортного отдыха.
+                  </CardDescription>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Award className="h-8 w-8 text-blue-600" />
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Shield className="h-6 w-6 text-blue-700" />
                   </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-blue-900">Качество</h3>
-                <p className="text-gray-700">
-                  Мы предлагаем только современные яхты в отличном состоянии. Комфорт и высокий уровень сервиса — наша визитная карточка.
-                </p>
-              </div>
+                  <h3 className="text-xl font-semibold mb-2">Безопасность</h3>
+                  <CardDescription>
+                    Все наши яхты регулярно проходят технический осмотр и соответствуют высоким стандартам безопасности на воде.
+                  </CardDescription>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Users className="h-8 w-8 text-blue-600" />
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6 text-blue-700" />
                   </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-blue-900">Доступность</h3>
-                <p className="text-gray-700">
-                  Мы стремимся сделать отдых на яхте доступным для каждого. Разнообразие флота позволяет выбрать судно под любой бюджет.
-                </p>
-              </div>
+                  <h3 className="text-xl font-semibold mb-2">Опытная команда</h3>
+                  <CardDescription>
+                    Наши капитаны и члены экипажа — профессионалы с многолетним опытом работы и глубоким знанием акватории.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Compass className="h-6 w-6 text-blue-700" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Индивидуальный подход</h3>
+                  <CardDescription>
+                    Мы разрабатываем маршруты с учетом ваших пожеланий и предпочтений, чтобы сделать ваше путешествие незабываемым.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Award className="h-6 w-6 text-blue-700" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Качественный сервис</h3>
+                  <CardDescription>
+                    Мы гордимся высоким уровнем обслуживания и стремимся превзойти ожидания каждого клиента.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-none shadow-md">
+                <CardContent className="pt-6">
+                  <div className="rounded-full bg-blue-100 p-3 w-12 h-12 flex items-center justify-center mb-4">
+                    <Anchor className="h-6 w-6 text-blue-700" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Гибкие условия</h3>
+                  <CardDescription>
+                    Предлагаем различные варианты аренды — от нескольких часов до нескольких недель, с командой или без.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -100,121 +130,91 @@ const About = () => {
         {/* Our Team */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-blue-900 text-center mb-4">Наша команда</h2>
-            <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-              Опытные профессионалы, объединенные страстью к морю и парусному спорту
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  name: 'Александр Морев',
-                  position: 'Основатель и CEO',
-                  image: 'https://randomuser.me/api/portraits/men/32.jpg',
-                  bio: 'Профессиональный яхтсмен с 20-летним опытом. Основал компанию в 2014 году.'
-                },
-                {
-                  name: 'Елена Волкова',
-                  position: 'Менеджер по бронированию',
-                  image: 'https://randomuser.me/api/portraits/women/44.jpg',
-                  bio: 'Отвечает за комфорт клиентов и идеальную организацию отдыха на воде.'
-                },
-                {
-                  name: 'Дмитрий Соколов',
-                  position: 'Главный капитан',
-                  image: 'https://randomuser.me/api/portraits/men/67.jpg',
-                  bio: 'Отвечает за техническое состояние флота и подготовку экипажей.'
-                },
-                {
-                  name: 'Мария Лебедева',
-                  position: 'Сервис-менеджер',
-                  image: 'https://randomuser.me/api/portraits/women/17.jpg',
-                  bio: 'Следит за качеством сервиса и обратной связью от клиентов.'
-                }
-              ].map((member, index) => (
-                <div key={index} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-blue-900 mb-1">{member.name}</h3>
-                    <p className="text-blue-600 mb-3">{member.position}</p>
-                    <p className="text-gray-700">{member.bio}</p>
-                  </div>
-                </div>
-              ))}
+            <h2 className="text-3xl font-bold mb-12 text-center text-blue-900">Наша команда</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400" 
+                  alt="Александр Морозов" 
+                  className="w-48 h-48 object-cover rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-semibold">Александр Морозов</h3>
+                <p className="text-blue-600 mb-2">Основатель и CEO</p>
+                <p className="text-gray-600 text-sm px-4">Опытный яхтсмен с 20-летним стажем и страстью к морским путешествиям.</p>
+              </div>
+              
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" 
+                  alt="Елена Волкова" 
+                  className="w-48 h-48 object-cover rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-semibold">Елена Волкова</h3>
+                <p className="text-blue-600 mb-2">Директор по обслуживанию клиентов</p>
+                <p className="text-gray-600 text-sm px-4">Отвечает за безупречный сервис и комфорт каждого клиента.</p>
+              </div>
+              
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" 
+                  alt="Дмитрий Соколов" 
+                  className="w-48 h-48 object-cover rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-semibold">Дмитрий Соколов</h3>
+                <p className="text-blue-600 mb-2">Главный капитан</p>
+                <p className="text-gray-600 text-sm px-4">Отвечает за техническое состояние флота и подготовку экипажей.</p>
+              </div>
+              
+              <div className="text-center">
+                <img 
+                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400" 
+                  alt="Наталья Орлова" 
+                  className="w-48 h-48 object-cover rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-semibold">Наталья Орлова</h3>
+                <p className="text-blue-600 mb-2">Финансовый директор</p>
+                <p className="text-gray-600 text-sm px-4">Контролирует финансовые операции и развитие компании.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Statistics */}
-        <section className="py-16 bg-blue-900 text-white">
+        {/* Our Achievements */}
+        <section className="py-16 bg-blue-50">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <h2 className="text-3xl font-bold mb-12 text-center text-blue-900">Наши достижения</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-4xl font-bold mb-2">10+</div>
-                <div className="text-blue-200">Лет опыта</div>
+                <p className="text-4xl font-bold text-blue-700 mb-2">12+</p>
+                <p className="text-lg text-gray-700">Лет на рынке</p>
               </div>
               <div>
-                <div className="text-4xl font-bold mb-2">20+</div>
-                <div className="text-blue-200">Яхт во флоте</div>
+                <p className="text-4xl font-bold text-blue-700 mb-2">30+</p>
+                <p className="text-lg text-gray-700">Яхт в нашем флоте</p>
               </div>
               <div>
-                <div className="text-4xl font-bold mb-2">1500+</div>
-                <div className="text-blue-200">Довольных клиентов</div>
+                <p className="text-4xl font-bold text-blue-700 mb-2">5000+</p>
+                <p className="text-lg text-gray-700">Довольных клиентов</p>
               </div>
               <div>
-                <div className="text-4xl font-bold mb-2">3</div>
-                <div className="text-blue-200">Города присутствия</div>
+                <p className="text-4xl font-bold text-blue-700 mb-2">98%</p>
+                <p className="text-lg text-gray-700">Положительных отзывов</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Our Locations */}
+        {/* Partner Logos */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Наши локации</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  city: 'Севастополь',
-                  image: 'https://images.unsplash.com/photo-1583087253216-e2a2ed82d229?auto=format&fit=crop&q=80&w=500',
-                  address: 'Севастопольская бухта, причал №3',
-                  phone: '+7 (978) 123-45-67'
-                },
-                {
-                  city: 'Ялта',
-                  image: 'https://images.unsplash.com/photo-1573155993874-d5d48af862ba?auto=format&fit=crop&q=80&w=500',
-                  address: 'Ялтинский порт, причал №5',
-                  phone: '+7 (978) 765-43-21'
-                },
-                {
-                  city: 'Сочи',
-                  image: 'https://images.unsplash.com/photo-1605275153047-7a4d7391997c?auto=format&fit=crop&q=80&w=500',
-                  address: 'Сочинский морской порт, причал №2',
-                  phone: '+7 (918) 987-65-43'
-                }
-              ].map((location, index) => (
-                <div key={index} className="bg-white rounded-lg overflow-hidden shadow-md">
-                  <img 
-                    src={location.image} 
-                    alt={`МореЯхт - ${location.city}`} 
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-blue-900 mb-3">{location.city}</h3>
-                    <div className="space-y-2 text-gray-700">
-                      <p><strong>Адрес:</strong> {location.address}</p>
-                      <p><strong>Телефон:</strong> {location.phone}</p>
-                      <p><strong>Часы работы:</strong> 09:00 - 20:00, ежедневно</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <h2 className="text-2xl font-semibold mb-8 text-center text-gray-700">Наши партнёры</h2>
+            <Separator className="mb-8" />
+            <div className="flex flex-wrap justify-center items-center gap-12 opacity-70">
+              <img src="https://via.placeholder.com/120x60?text=Partner+1" alt="Партнер 1" className="h-12" />
+              <img src="https://via.placeholder.com/120x60?text=Partner+2" alt="Партнер 2" className="h-12" />
+              <img src="https://via.placeholder.com/120x60?text=Partner+3" alt="Партнер 3" className="h-12" />
+              <img src="https://via.placeholder.com/120x60?text=Partner+4" alt="Партнер 4" className="h-12" />
+              <img src="https://via.placeholder.com/120x60?text=Partner+5" alt="Партнер 5" className="h-12" />
             </div>
           </div>
         </section>
