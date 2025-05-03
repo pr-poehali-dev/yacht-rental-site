@@ -8,6 +8,8 @@ import Contacts from './pages/Contacts';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminYachts from './pages/AdminYachts';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -22,6 +24,11 @@ function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      
+      {/* Административные маршруты */}
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/yachts" element={<AdminYachts />} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
