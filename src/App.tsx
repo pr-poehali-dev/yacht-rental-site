@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminYachts from './pages/AdminYachts';
+import AdminBookings from './pages/AdminBookings';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -28,6 +29,7 @@ function App() {
       {/* Административные маршруты */}
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/admin/yachts" element={<AdminYachts />} />
+      <Route path="/admin/bookings" element={<AdminBookings />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
