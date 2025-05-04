@@ -116,7 +116,7 @@ export const adminReviewsApi = {
   }
 };
 
-// API для статистики и отчетов (заглушка для будущей реализации)
+// API для статистики и отчетов
 export interface BookingStats {
   totalBookings: number;
   completedBookings: number;
@@ -124,6 +124,30 @@ export interface BookingStats {
   revenue: number;
   revenueByMonth: { month: string; value: number }[];
   popularYachts: { yachtId: string; yachtName: string; bookings: number }[];
+  // Расширенные метрики для улучшенного дашборда
+  averageBookingValue: number;
+  conversionRate: number;
+  repeatCustomerRate: number;
+  bookingsByDayOfWeek: { day: string; value: number }[];
+  topClients: { userId: string; userName: string; bookings: number; totalSpent: number }[];
+  bookingDuration: { duration: string; count: number }[];
+}
+
+// Интерфейс для пользовательского отчета
+export interface CustomReport {
+  id: string;
+  name: string;
+  description: string;
+  metrics: string[];
+  filters: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    yachtIds?: string[];
+    userIds?: string[];
+    statuses?: string[];
+  };
+  createdAt: Date;
+  lastRunAt?: Date;
 }
 
 export const adminAnalyticsApi = {
@@ -134,6 +158,31 @@ export const adminAnalyticsApi = {
         ...(dateFrom && { dateFrom: dateFrom.toISOString() }),
         ...(dateTo && { dateTo: dateTo.toISOString() })
       }
+    });
+    return response.success ? response.data : null;
+  },
+  
+  // Получить список сохраненных пользовательских отчетов
+  getSavedReports: async (): Promise<CustomReport[]> => {
+    const response = await apiRequest<CustomReport[]>('/admin/analytics/reports', { 
+      method: 'GET'
+    });
+    return response.success ? response.data : [];
+  },
+  
+  // Создать новый пользовательский отчет
+  createReport: async (reportData: Omit<CustomReport, 'id' | 'createdAt'>): Promise<CustomReport | null> => {
+    const response = await apiRequest<CustomReport>('/admin/analytics/reports', {
+      method: 'POST',
+      body: reportData
+    });
+    return response.success ? response.data : null;
+  },
+  
+  // Запустить пользовательский отчет
+  runReport: async (reportId: string): Promise<any> => {
+    const response = await apiRequest<any>(`/admin/analytics/reports/${reportId}/run`, {
+      method: 'POST'
     });
     return response.success ? response.data : null;
   }

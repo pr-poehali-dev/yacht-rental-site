@@ -1,14 +1,40 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminAnalyticsApi, BookingStats } from '@/services/adminApi';
+import { adminAnalyticsApi, BookingStats, CustomReport } from '@/services/adminApi';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AnalyticsFilters {
   dateFrom?: Date;
   dateTo?: Date;
+  metrics?: string[];
 }
+
+export interface ReportMetric {
+  id: string;
+  name: string;
+  category: 'financial' | 'bookings' | 'customers';
+  description: string;
+}
+
+export const availableMetrics: ReportMetric[] = [
+  { id: 'totalBookings', name: 'Всего бронирований', category: 'bookings', description: 'Общее количество бронирований за период' },
+  { id: 'completedBookings', name: 'Выполненные бронирования', category: 'bookings', description: 'Количество успешно выполненных бронирований' },
+  { id: 'cancelledBookings', name: 'Отмененные бронирования', category: 'bookings', description: 'Количество отмененных бронирований' },
+  { id: 'revenue', name: 'Общая выручка', category: 'financial', description: 'Сумма всех платежей за бронирования' },
+  { id: 'averageBookingValue', name: 'Средняя стоимость бронирования', category: 'financial', description: 'Средняя стоимость одного бронирования' },
+  { id: 'conversionRate', name: 'Конверсия', category: 'bookings', description: 'Процент посетителей, совершивших бронирование' },
+  { id: 'repeatCustomerRate', name: 'Процент повторных клиентов', category: 'customers', description: 'Доля клиентов, сделавших более одного бронирования' },
+  { id: 'revenueByMonth', name: 'Доходы по месяцам', category: 'financial', description: 'График доходов в разбивке по месяцам' },
+  { id: 'popularYachts', name: 'Популярные яхты', category: 'bookings', description: 'Рейтинг яхт по количеству бронирований' },
+  { id: 'bookingsByDayOfWeek', name: 'Бронирования по дням недели', category: 'bookings', description: 'Распределение бронирований по дням недели' },
+  { id: 'topClients', name: 'Лучшие клиенты', category: 'customers', description: 'Список клиентов с наибольшим количеством бронирований' },
+  { id: 'bookingDuration', name: 'Длительность бронирований', category: 'bookings', description: 'Распределение бронирований по длительности' }
+];
 
 export function useAdminAnalytics() {
   const [stats, setStats] = useState<BookingStats | null>(null);
+  const [savedReports, setSavedReports] = useState<CustomReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AnalyticsFilters>({
@@ -40,9 +66,19 @@ export function useAdminAnalytics() {
     }
   }, [filters]);
 
+  const fetchSavedReports = useCallback(async () => {
+    try {
+      const reports = await adminAnalyticsApi.getSavedReports();
+      setSavedReports(reports);
+    } catch (err) {
+      console.error('Ошибка при загрузке сохраненных отчетов:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    fetchSavedReports();
+  }, [fetchStats, fetchSavedReports]);
 
   const updateFilters = (newFilters: AnalyticsFilters) => {
     setFilters(newFilters);
@@ -64,7 +100,10 @@ export function useAdminAnalytics() {
       ['Всего бронирований', stats.totalBookings],
       ['Выполнено бронирований', stats.completedBookings],
       ['Отменено бронирований', stats.cancelledBookings],
-      ['Общая выручка', stats.revenue]
+      ['Общая выручка', stats.revenue],
+      ['Средняя стоимость бронирования', stats.averageBookingValue],
+      ['Конверсия', stats.conversionRate],
+      ['Процент повторных клиентов', stats.repeatCustomerRate]
     ].map(row => row.join(','));
     
     // Добавляем данные по месяцам
@@ -89,12 +128,122 @@ export function useAdminAnalytics() {
     return true;
   };
 
+  // Функция для экспорта данных в PDF
+  const exportToPDF = async (elementId: string, filename: string = 'analytics-report') => {
+    if (!stats) return null;
+    
+    try {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        console.error(`Элемент с ID ${elementId} не найден`);
+        return null;
+      }
+      
+      // Создаем canvas из HTML-элемента
+      const canvas = await html2canvas(element, {
+        scale: 2, // Повышенное качество
+        logging: false,
+        useCORS: true // Разрешаем загрузку изображений с других доменов
+      });
+      
+      // Создаем PDF в формате A4
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Размеры страницы A4 в мм
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      
+      // Соотношение сторон canvas
+      const aspectRatio = canvas.width / canvas.height;
+      
+      // Вычисляем размеры для сохранения соотношения сторон
+      let imgWidth = pdfWidth - 20; // Отступы по 10мм с каждой стороны
+      let imgHeight = imgWidth / aspectRatio;
+      
+      // Если изображение получается больше страницы, уменьшаем высоту
+      if (imgHeight > pdfHeight - 20) {
+        imgHeight = pdfHeight - 20;
+        imgWidth = imgHeight * aspectRatio;
+      }
+      
+      // Вычисляем отступы для центрирования
+      const xOffset = (pdfWidth - imgWidth) / 2;
+      const yOffset = 10; // Отступ сверху
+      
+      // Добавляем заголовок отчета
+      pdf.setFontSize(16);
+      pdf.text('Аналитический отчет по бронированиям яхт', xOffset, yOffset);
+      
+      // Добавляем период отчета
+      pdf.setFontSize(12);
+      const periodText = `Период: ${filters.dateFrom?.toLocaleDateString('ru-RU')} - ${filters.dateTo?.toLocaleDateString('ru-RU')}`;
+      pdf.text(periodText, xOffset, yOffset + 10);
+      
+      // Добавляем изображение с графиками
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset + 15, imgWidth, imgHeight);
+      
+      // Добавляем дату создания отчета
+      pdf.setFontSize(10);
+      const dateText = `Отчет сформирован: ${new Date().toLocaleString('ru-RU')}`;
+      pdf.text(dateText, xOffset, pdfHeight - 10);
+      
+      // Сохраняем PDF-файл
+      pdf.save(`${filename}-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      return true;
+    } catch (err) {
+      console.error('Ошибка при создании PDF:', err);
+      return null;
+    }
+  };
+
+  // Создание пользовательского отчета
+  const createCustomReport = async (reportData: Omit<CustomReport, 'id' | 'createdAt'>) => {
+    setLoading(true);
+    try {
+      const newReport = await adminAnalyticsApi.createReport(reportData);
+      if (newReport) {
+        await fetchSavedReports();
+        return { success: true, report: newReport };
+      }
+      return { success: false, error: 'Не удалось создать отчет' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Запуск сохраненного отчета
+  const runCustomReport = async (reportId: string) => {
+    setLoading(true);
+    try {
+      const reportData = await adminAnalyticsApi.runReport(reportId);
+      if (reportData) {
+        return { success: true, data: reportData };
+      }
+      return { success: false, error: 'Не удалось запустить отчет' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     stats,
+    savedReports,
     loading,
     error,
     filters,
     updateFilters,
-    exportToCSV
+    exportToCSV,
+    exportToPDF,
+    createCustomReport,
+    runCustomReport,
+    availableMetrics
   };
 }
