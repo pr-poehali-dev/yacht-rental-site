@@ -116,6 +116,34 @@ export const adminReviewsApi = {
   }
 };
 
+// Типы для финансовой аналитики
+export interface YachtTypeRevenue {
+  yachtType: string;
+  revenue: number;
+  bookingCount: number;
+  percentFromTotal: number;
+}
+
+export interface SeasonalRevenue {
+  season: 'winter' | 'spring' | 'summer' | 'autumn'; 
+  revenue: number;
+  bookingCount: number;
+  percentChange: number; // Изменение по сравнению с предыдущим годом
+}
+
+export interface RevenueForecast {
+  month: string;
+  predicted: number;
+  lowerBound: number;
+  upperBound: number;
+}
+
+export interface YearOverYear {
+  year: number;
+  revenue: number;
+  percentChange: number;
+}
+
 // API для статистики и отчетов
 export interface BookingStats {
   totalBookings: number;
@@ -131,6 +159,28 @@ export interface BookingStats {
   bookingsByDayOfWeek: { day: string; value: number }[];
   topClients: { userId: string; userName: string; bookings: number; totalSpent: number }[];
   bookingDuration: { duration: string; count: number }[];
+  // Новые метрики финансовой аналитики
+  revenueByYachtType: YachtTypeRevenue[];
+  seasonalRevenue: SeasonalRevenue[];
+  revenueForecast: RevenueForecast[];
+  yearOverYearComparison: YearOverYear[];
+}
+
+// Расписание для отчетов
+export type ReportSchedule = 'daily' | 'weekly' | 'monthly' | 'quarterly';
+
+// Тип для доставки отчета
+export type ReportDelivery = 'email' | 'download' | 'dashboard';
+
+// Интерфейс для шаблона отчета
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  metrics: string[];
+  category: 'financial' | 'operational' | 'marketing' | 'custom';
+  isDefault: boolean;
+  createdAt: Date;
 }
 
 // Интерфейс для пользовательского отчета
@@ -148,15 +198,23 @@ export interface CustomReport {
   };
   createdAt: Date;
   lastRunAt?: Date;
+  // Новые поля для планирования отчетов
+  isScheduled?: boolean;
+  schedule?: ReportSchedule;
+  nextRunDate?: Date;
+  deliveryMethod?: ReportDelivery;
+  recipients?: string[]; // Email адреса получателей
+  templateId?: string; // ID используемого шаблона
 }
 
 export const adminAnalyticsApi = {
-  getBookingStats: async (dateFrom?: Date, dateTo?: Date): Promise<BookingStats | null> => {
+  getBookingStats: async (dateFrom?: Date, dateTo?: Date, compareWithPrevPeriod: boolean = false): Promise<BookingStats | null> => {
     const response = await apiRequest<BookingStats>('/admin/analytics/bookings', { 
       method: 'GET',
       headers: {
         ...(dateFrom && { dateFrom: dateFrom.toISOString() }),
-        ...(dateTo && { dateTo: dateTo.toISOString() })
+        ...(dateTo && { dateTo: dateTo.toISOString() }),
+        compareWithPrevPeriod: compareWithPrevPeriod.toString()
       }
     });
     return response.success ? response.data : null;
@@ -185,5 +243,68 @@ export const adminAnalyticsApi = {
       method: 'POST'
     });
     return response.success ? response.data : null;
+  },
+
+  // Получить список шаблонов отчетов
+  getReportTemplates: async (): Promise<ReportTemplate[]> => {
+    const response = await apiRequest<ReportTemplate[]>('/admin/analytics/templates', { 
+      method: 'GET'
+    });
+    return response.success ? response.data : [];
+  },
+
+  // Создать шаблон отчета
+  createReportTemplate: async (templateData: Omit<ReportTemplate, 'id' | 'createdAt'>): Promise<ReportTemplate | null> => {
+    const response = await apiRequest<ReportTemplate>('/admin/analytics/templates', {
+      method: 'POST',
+      body: templateData
+    });
+    return response.success ? response.data : null;
+  },
+
+  // Добавить расписание к отчету
+  scheduleReport: async (reportId: string, schedule: {
+    frequency: ReportSchedule;
+    deliveryMethod: ReportDelivery;
+    recipients?: string[];
+  }): Promise<CustomReport | null> => {
+    const response = await apiRequest<CustomReport>(`/admin/analytics/reports/${reportId}/schedule`, {
+      method: 'POST',
+      body: schedule
+    });
+    return response.success ? response.data : null;
+  },
+
+  // Отправить отчет по email
+  sendReportByEmail: async (reportId: string, recipients: string[]): Promise<boolean> => {
+    const response = await apiRequest<{success: boolean}>(`/admin/analytics/reports/${reportId}/send`, {
+      method: 'POST',
+      body: { recipients }
+    });
+    return response.success && response.data.success;
+  },
+
+  // Получить данные сравнения с предыдущими периодами
+  getComparisonData: async (dateFrom: Date, dateTo: Date, comparisonPeriod: 'year' | 'month' | 'week'): Promise<any> => {
+    const response = await apiRequest<any>('/admin/analytics/comparison', {
+      method: 'GET',
+      headers: {
+        dateFrom: dateFrom.toISOString(),
+        dateTo: dateTo.toISOString(),
+        comparisonPeriod
+      }
+    });
+    return response.success ? response.data : null;
+  },
+
+  // Получить прогноз доходов
+  getRevenueForecast: async (months: number = 3): Promise<RevenueForecast[]> => {
+    const response = await apiRequest<RevenueForecast[]>('/admin/analytics/forecast', {
+      method: 'GET',
+      headers: {
+        months: months.toString()
+      }
+    });
+    return response.success ? response.data : [];
   }
 };

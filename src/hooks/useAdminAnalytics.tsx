@@ -1,6 +1,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminAnalyticsApi, BookingStats, CustomReport } from '@/services/adminApi';
+import { 
+  adminAnalyticsApi, 
+  BookingStats, 
+  CustomReport, 
+  ReportTemplate,
+  ReportSchedule,
+  ReportDelivery,
+  RevenueForecast 
+} from '@/services/adminApi';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -8,6 +16,7 @@ interface AnalyticsFilters {
   dateFrom?: Date;
   dateTo?: Date;
   metrics?: string[];
+  compareWithPrevPeriod?: boolean;
 }
 
 export interface ReportMetric {
@@ -17,6 +26,7 @@ export interface ReportMetric {
   description: string;
 }
 
+// Доступные метрики для отчетов
 export const availableMetrics: ReportMetric[] = [
   { id: 'totalBookings', name: 'Всего бронирований', category: 'bookings', description: 'Общее количество бронирований за период' },
   { id: 'completedBookings', name: 'Выполненные бронирования', category: 'bookings', description: 'Количество успешно выполненных бронирований' },
@@ -29,17 +39,40 @@ export const availableMetrics: ReportMetric[] = [
   { id: 'popularYachts', name: 'Популярные яхты', category: 'bookings', description: 'Рейтинг яхт по количеству бронирований' },
   { id: 'bookingsByDayOfWeek', name: 'Бронирования по дням недели', category: 'bookings', description: 'Распределение бронирований по дням недели' },
   { id: 'topClients', name: 'Лучшие клиенты', category: 'customers', description: 'Список клиентов с наибольшим количеством бронирований' },
-  { id: 'bookingDuration', name: 'Длительность бронирований', category: 'bookings', description: 'Распределение бронирований по длительности' }
+  { id: 'bookingDuration', name: 'Длительность бронирований', category: 'bookings', description: 'Распределение бронирований по длительности' },
+  // Новые финансовые метрики
+  { id: 'revenueByYachtType', name: 'Доходы по типам яхт', category: 'financial', description: 'Распределение доходов по различным типам яхт' },
+  { id: 'seasonalRevenue', name: 'Сезонные доходы', category: 'financial', description: 'Анализ доходов по сезонам года' },
+  { id: 'yearOverYearComparison', name: 'Сравнение год к году', category: 'financial', description: 'Сравнение доходов с предыдущими годами' },
+  { id: 'revenueForecast', name: 'Прогноз доходов', category: 'financial', description: 'Прогнозируемые доходы на будущие периоды' }
+];
+
+// Варианты расписания для выбора
+export const scheduleOptions = [
+  { value: 'daily', label: 'Ежедневно' },
+  { value: 'weekly', label: 'Еженедельно' },
+  { value: 'monthly', label: 'Ежемесячно' },
+  { value: 'quarterly', label: 'Ежеквартально' }
+];
+
+// Варианты способов доставки отчетов
+export const deliveryOptions = [
+  { value: 'email', label: 'По электронной почте' },
+  { value: 'download', label: 'Автоматическое скачивание' },
+  { value: 'dashboard', label: 'Только в дашборде' }
 ];
 
 export function useAdminAnalytics() {
   const [stats, setStats] = useState<BookingStats | null>(null);
   const [savedReports, setSavedReports] = useState<CustomReport[]>([]);
+  const [reportTemplates, setReportTemplates] = useState<ReportTemplate[]>([]);
+  const [revenueForecast, setRevenueForecast] = useState<RevenueForecast[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AnalyticsFilters>({
     dateFrom: new Date(new Date().setMonth(new Date().getMonth() - 1)), // По умолчанию данные за последний месяц
     dateTo: new Date(),
+    compareWithPrevPeriod: false
   });
 
   const fetchStats = useCallback(async (newFilters?: AnalyticsFilters) => {
@@ -50,7 +83,8 @@ export function useAdminAnalytics() {
       const currentFilters = newFilters || filters;
       const response = await adminAnalyticsApi.getBookingStats(
         currentFilters.dateFrom,
-        currentFilters.dateTo
+        currentFilters.dateTo,
+        currentFilters.compareWithPrevPeriod
       );
 
       if (response) {
@@ -75,10 +109,30 @@ export function useAdminAnalytics() {
     }
   }, []);
 
+  const fetchReportTemplates = useCallback(async () => {
+    try {
+      const templates = await adminAnalyticsApi.getReportTemplates();
+      setReportTemplates(templates);
+    } catch (err) {
+      console.error('Ошибка при загрузке шаблонов отчетов:', err);
+    }
+  }, []);
+
+  const fetchRevenueForecast = useCallback(async (months: number = 3) => {
+    try {
+      const forecast = await adminAnalyticsApi.getRevenueForecast(months);
+      setRevenueForecast(forecast);
+    } catch (err) {
+      console.error('Ошибка при загрузке прогноза доходов:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
     fetchSavedReports();
-  }, [fetchStats, fetchSavedReports]);
+    fetchReportTemplates();
+    fetchRevenueForecast();
+  }, [fetchStats, fetchSavedReports, fetchReportTemplates, fetchRevenueForecast]);
 
   const updateFilters = (newFilters: AnalyticsFilters) => {
     setFilters(newFilters);
@@ -233,9 +287,117 @@ export function useAdminAnalytics() {
     }
   };
 
+  // Создание шаблона отчета
+  const createReportTemplate = async (templateData: Omit<ReportTemplate, 'id' | 'createdAt'>) => {
+    setLoading(true);
+    try {
+      const newTemplate = await adminAnalyticsApi.createReportTemplate(templateData);
+      if (newTemplate) {
+        await fetchReportTemplates();
+        return { success: true, template: newTemplate };
+      }
+      return { success: false, error: 'Не удалось создать шаблон отчета' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Планирование отчета
+  const scheduleReport = async (reportId: string, schedule: {
+    frequency: ReportSchedule;
+    deliveryMethod: ReportDelivery;
+    recipients?: string[];
+  }) => {
+    setLoading(true);
+    try {
+      const updatedReport = await adminAnalyticsApi.scheduleReport(reportId, schedule);
+      if (updatedReport) {
+        await fetchSavedReports();
+        return { success: true, report: updatedReport };
+      }
+      return { success: false, error: 'Не удалось запланировать отчет' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Отправка отчета по email
+  const sendReportByEmail = async (reportId: string, recipients: string[]) => {
+    setLoading(true);
+    try {
+      const success = await adminAnalyticsApi.sendReportByEmail(reportId, recipients);
+      return { success, error: success ? null : 'Не удалось отправить отчет' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Получение данных для сравнения с предыдущими периодами
+  const getComparisonData = async (comparisonPeriod: 'year' | 'month' | 'week' = 'year') => {
+    setLoading(true);
+    try {
+      if (!filters.dateFrom || !filters.dateTo) {
+        return { success: false, error: 'Необходимо указать период для сравнения' };
+      }
+      
+      const data = await adminAnalyticsApi.getComparisonData(
+        filters.dateFrom, 
+        filters.dateTo, 
+        comparisonPeriod
+      );
+      
+      if (data) {
+        return { success: true, data };
+      }
+      return { success: false, error: 'Не удалось загрузить данные для сравнения' };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Создание отчета из шаблона
+  const createReportFromTemplate = async (templateId: string, customName?: string) => {
+    try {
+      const template = reportTemplates.find(t => t.id === templateId);
+      if (!template) {
+        return { success: false, error: 'Шаблон отчета не найден' };
+      }
+      
+      const reportData: Omit<CustomReport, 'id' | 'createdAt'> = {
+        name: customName || `${template.name} (${new Date().toLocaleDateString('ru-RU')})`,
+        description: template.description,
+        metrics: template.metrics,
+        filters: {
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo
+        },
+        templateId: template.id
+      };
+      
+      return await createCustomReport(reportData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return {
     stats,
     savedReports,
+    reportTemplates,
+    revenueForecast,
     loading,
     error,
     filters,
@@ -244,6 +406,14 @@ export function useAdminAnalytics() {
     exportToPDF,
     createCustomReport,
     runCustomReport,
-    availableMetrics
+    createReportTemplate,
+    scheduleReport,
+    sendReportByEmail,
+    getComparisonData,
+    createReportFromTemplate,
+    fetchRevenueForecast,
+    availableMetrics,
+    scheduleOptions,
+    deliveryOptions
   };
 }
